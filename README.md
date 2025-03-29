@@ -7,6 +7,8 @@ A proof-of-concept Linux kernel driver which continuously collects kernel messag
 Simply download the zip/git clone this repo and place it in drivers/misc, or wherever you want, ensuring to add the dir in Makefile and Kconfig of misc. i.e ```source "drivers/misc/qrcon/Kconfig"``` and ```obj-y		+= qrcon/```
 
 ### Decoding 
+**Note:** Only tested on 6.14 and 6.1. >4.19 requires additional modifications
+
 Some important settings to adjust depending on your screen size are:
 ```c
 static int qr_position = QRPOS_TOP_RIGHT;
