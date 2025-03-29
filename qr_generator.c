@@ -23,7 +23,6 @@
 #include <linux/module.h>
 #include <linux/string.h>
 #include <linux/types.h>
-#include <asm/div64.h>
 #include "qr_generator.h"
 
 /* Maximum sizes for buffers */
