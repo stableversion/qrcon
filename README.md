@@ -1,6 +1,6 @@
 # qrcon (PoC)
 
-A proof-of-concept Linux kernel driver which continuously collects kernel messages (kmsg) and during a panic, dumps it all from the beginning. This provides a debugging solution when only Simple Framebuffer is available, and things like PSTORE, USB or UART are unavailable.
+A proof-of-concept Linux kernel driver which continuously collects kernel messages (kmsg) and during a panic, dumps it all from the beginning in batches. This provides a debugging solution when only Simple Framebuffer is available, and things like PSTORE, USB or UART are unavailable.
 
 ## Installing
 
