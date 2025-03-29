@@ -1,0 +1,10 @@
+config QRCON
+	tristate "QR Code Console for kernel debugging"
+	depends on FB && FB_SIMPLE && CRYPTO_ZSTD
+	help
+	  This driver captures kernel messages and encodes them into
+	  QR codes displayed on framebuffer console. This is useful
+	  for debugging when traditional interfaces like PSTORE, USB 
+	  or UART are unavailable.
+
+	  If unsure, say N. 
