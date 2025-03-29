@@ -24,11 +24,13 @@ static int qr_border = 5;
 static int qr_refresh_delay = 700; // give you enough time to scan the qrcode
 ```
 
-The qrcode generation will automatically trigger after a panic, if it doesn't, use ```panic=5``` in your cmdline. It likely won't survive a catostrophic panic, but it has not been tested.
+The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.
 
 - Download the [Binary Eye](https://github.com/markusfisch/BinaryEye) app on Android, enable continuous scanning. (optionally enable qrcode only mode)
 - After scanning go to history, select everything, export as JSON, and share with localsend/termux, etc.
 - Use decode.py "json" to decode with color like dmesg :D
+
+You can use ```panic=1``` for panic auto-reboot.
 
 ## Usefulness
 
