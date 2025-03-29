@@ -743,6 +743,8 @@ static bool qr_segment_iterator_next(struct segment_iterator *iter, u16 *bits, s
 {
 	size_t bit_size;
 	u16 number;
+	size_t new_chars;
+	size_t remaining;
 	
 	if (!iter || !bits || !size)
 		return false;
@@ -788,11 +790,11 @@ static bool qr_segment_iterator_next(struct segment_iterator *iter, u16 *bits, s
 		iter->offset += bit_size;
 		
 		/* Calculate how many new characters from these bits */
-		size_t new_chars = (bit_size == 1) ? 1 : (bit_size + 1) / 3;
+		new_chars = (bit_size == 1) ? 1 : (bit_size + 1) / 3;
 		
 		if (iter->carry_len + new_chars > 3) {
 			/* We'll have more than 3 digits total, output first 3 */
-			size_t remaining = iter->carry_len + new_chars - 3;
+			remaining = iter->carry_len + new_chars - 3;
 			*bits = iter->carry * POW10[new_chars - remaining] + 
 			        (number / POW10[remaining]);
 			*size = NUM_CHARS_BITS[3];
@@ -830,6 +832,12 @@ static bool encoded_msg_init(struct encoded_msg *em,
                            size_t data_size)
 {
 	struct qr_version version;
+	size_t max_data;
+	size_t ec_size;
+	size_t g1_blocks;
+	size_t g2_blocks;
+	size_t g1_blk_size;
+	size_t required_size;
 	
 	if (!em || !segments || !data || count == 0 || data_size == 0)
 		return false;
@@ -840,14 +848,14 @@ static bool encoded_msg_init(struct encoded_msg *em,
 		return false;
 	
 	/* Calculate data sizes based on version */
-	size_t max_data = qr_version_max_data(version);
-	size_t ec_size = qr_version_ec_size(version);
-	size_t g1_blocks = qr_version_g1_blocks(version);
-	size_t g2_blocks = qr_version_g2_blocks(version);
-	size_t g1_blk_size = qr_version_g1_blk_size(version);
+	max_data = qr_version_max_data(version);
+	ec_size = qr_version_ec_size(version);
+	g1_blocks = qr_version_g1_blocks(version);
+	g2_blocks = qr_version_g2_blocks(version);
+	g1_blk_size = qr_version_g1_blk_size(version);
 	
 	/* Ensure data buffer is large enough */
-	size_t required_size = max_data + ec_size * (g1_blocks + g2_blocks);
+	required_size = max_data + ec_size * (g1_blocks + g2_blocks);
 	if (data_size < required_size)
 		return false;
 	
@@ -920,8 +928,10 @@ static void encoded_msg_add_segments(struct encoded_msg *em,
 	size_t size;
 	u16 bits;
 	struct segment_iterator iter;
+	size_t i;
+	size_t pad_offset;
 	
-	for (size_t i = 0; i < count; i++) {
+	for (i = 0; i < count; i++) {
 		/* Add segment header */
 		bits = qr_segment_get_header(segments[i], &size);
 		encoded_msg_push(em, &offset, bits, size);
@@ -946,8 +956,8 @@ static void encoded_msg_add_segments(struct encoded_msg *em,
 	}
 	
 	/* Add padding bytes */
-	size_t pad_offset = offset / 8;
-	for (size_t i = pad_offset; i < qr_version_max_data(em->version); i++) {
+	pad_offset = offset / 8;
+	for (i = pad_offset; i < qr_version_max_data(em->version); i++) {
 		em->data[i] = PADDING[(i & 1) ^ (pad_offset & 1)];
 	}
 }
@@ -1657,6 +1667,7 @@ size_t qr_max_data_size(u8 version, size_t url_len)
 {
 	struct qr_version ver;
 	size_t max_data;
+	size_t max;
 	
 	if (version < 1 || version > 40)
 		return 0;
@@ -1670,7 +1681,7 @@ size_t qr_max_data_size(u8 version, size_t url_len)
 			return 0;
 		
 		/* Include 2.5% overhead for the numeric encoding */
-		size_t max = max_data - url_len - 5;
+		max = max_data - url_len - 5;
 		return (max * 39) / 40;
 	} else {
 		/* Remove 3 bytes for binary segment (header 4 bits, length 16 bits, stop 4 bits) */

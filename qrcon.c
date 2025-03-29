@@ -123,6 +123,9 @@ static int qrcon_draw_rect(int x, int y, int width, int height, u32 color)
 {
     int i, current_width;
     int max_y;
+    u8 *row;
+    int j;
+    
     if (!fb_screen_base)
         return -EINVAL;
     max_y = (y + height > yres) ? yres : y + height;
@@ -130,8 +133,8 @@ static int qrcon_draw_rect(int x, int y, int width, int height, u32 color)
         current_width = (x + width > xres) ? (xres - x) : width;
         if (current_width <= 0)
             continue;
-        u8 *row = fb_screen_base + i * line_length + x * bytes_per_pixel;
-        for (int j = 0; j < current_width; j++) {
+        row = fb_screen_base + i * line_length + x * bytes_per_pixel;
+        for (j = 0; j < current_width; j++) {
             write_color_to_ptr(row + j * bytes_per_pixel, color, bytes_per_pixel);
         }
     }
@@ -186,7 +189,7 @@ static int qrcon_render_qr(void)
     if (qr_width == 0)
         return -EINVAL;
 
-    max_size_pixels = (min(xres, yres) * qr_size_percent) / 100;
+    max_size_pixels = ((xres < yres) ? xres : yres) * qr_size_percent / 100;
     block_size = max_size_pixels / qr_width;
     if (block_size < 1)
         block_size = 1;
@@ -421,6 +424,9 @@ static size_t qrcon_process_chunk(const void *data, size_t data_size, bool rende
 /* Modified qrcon_process_history to reset history data after processing */
 static void qrcon_process_history(void)
 {
+    size_t remaining;
+    size_t processed;
+    
     if (history_data_len == 0)
         return;
         
@@ -428,14 +434,13 @@ static void qrcon_process_history(void)
         
     /* Process the history buffer in optimally compressed chunks */
     while (history_data_pos < history_data_len) {
-        size_t remaining = history_data_len - history_data_pos;
-        size_t processed;
+        remaining = history_data_len - history_data_pos;
         
         processed = qrcon_process_chunk(history_data + history_data_pos, remaining, true);
         
         if (processed == 0) {
             /* Skip some data on error */
-            history_data_pos += min(QR_SKIP_SIZE, remaining);
+            history_data_pos += (remaining < QR_SKIP_SIZE) ? remaining : QR_SKIP_SIZE;
             pr_err("qrcon: Skipping problematic history data\n");
             continue;
         }
