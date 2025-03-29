@@ -49,3 +49,4 @@ The QR code library originally came from [drm_panic_qr](https://github.com/torva
 Clean up AI slop basically
 - Fix ZSTD_estimateCCtxSize, anything higher than 3 fails.
 - Sometimes framebuffer console can interfere and overwrite some qrcode data.
+- Investigate why anything below >6.13 produces very wrong qrcodes
