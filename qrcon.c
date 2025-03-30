@@ -421,7 +421,6 @@ static size_t qrcon_process_chunk(const void *data, size_t data_size, bool rende
     return processed;
 }
 
-/* Modified qrcon_process_history to reset history data after processing */
 static void qrcon_process_history(void)
 {
     size_t remaining;
@@ -432,10 +431,12 @@ static void qrcon_process_history(void)
         
     pr_info("qrcon: Processing %zu bytes of historical kernel messages\n", history_data_len);
         
+    // Initial delay to allow scanner to focus properly
+    bool first_delay = true;
+    
     /* Process the history buffer in optimally compressed chunks */
     while (history_data_pos < history_data_len) {
         remaining = history_data_len - history_data_pos;
-        
         processed = qrcon_process_chunk(history_data + history_data_pos, remaining, true);
         
         if (processed == 0) {
@@ -446,10 +447,15 @@ static void qrcon_process_history(void)
         }
         
         history_data_pos += processed;
-        if (panic_in_progress)
-            mdelay(qr_refresh_delay);
-        else
-            msleep(qr_refresh_delay);
+        if (first_delay) {
+            mdelay(2000);
+            first_delay = false;
+        } else {
+            if (panic_in_progress)
+                mdelay(qr_refresh_delay);
+            else
+                msleep(qr_refresh_delay);
+        }
     }
         
     pr_info("qrcon: Completed processing historical kernel messages\n");
