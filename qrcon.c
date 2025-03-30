@@ -22,7 +22,7 @@
 /* Add extern declaration for registered_fb */
 extern struct fb_info *registered_fb[FB_MAX];
 
-#define QR_BUF_SIZE 14096
+#define QR_BUF_SIZE 1000000
 #define QR_TMP_BUF_SIZE (QR_BUF_SIZE * 3)
 #define QR_MAX_MSG_SIZE 1200  /* Target compressed size for QR code */
 
