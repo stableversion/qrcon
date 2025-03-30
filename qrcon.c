@@ -425,15 +425,14 @@ static void qrcon_process_history(void)
 {
     size_t remaining;
     size_t processed;
+    // Initial delay to allow scanner to focus properly
+    bool first_delay = true;
     
     if (history_data_len == 0)
         return;
         
     pr_info("qrcon: Processing %zu bytes of historical kernel messages\n", history_data_len);
         
-    // Initial delay to allow scanner to focus properly
-    bool first_delay = true;
-    
     /* Process the history buffer in optimally compressed chunks */
     while (history_data_pos < history_data_len) {
         remaining = history_data_len - history_data_pos;
