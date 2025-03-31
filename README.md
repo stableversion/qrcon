@@ -23,6 +23,9 @@ static int qr_border = 5;
 ```c
 static int qr_refresh_delay = 700; // give you enough time to scan the qrcode
 ```
+```c
+static int recent_only = 0; // optionally show only recent messages for panic
+```
 
 The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.
 
