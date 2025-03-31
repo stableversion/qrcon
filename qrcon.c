@@ -88,8 +88,10 @@ static bool panic_rendering_complete = false;
 
 /* Delay between QR code updates in milliseconds */
 static int qr_refresh_delay = 700;
-module_param(qr_refresh_delay, int, 0644);
-MODULE_PARM_DESC(qr_refresh_delay, "Delay between QR code updates (ms)");
+
+/* Recent only mode */
+#define QRCON_RECENT_ONLY_SIZE 8096
+static int recent_only = 0;
 
 /* Function prototypes */
 static int qrcon_render_qr(void);
@@ -432,7 +434,12 @@ static void qrcon_process_history(void)
         return;
         
     pr_info("qrcon: Processing %zu bytes of historical kernel messages\n", history_data_len);
-        
+
+    if (recent_only && history_data_len > QRCON_RECENT_ONLY_SIZE) {
+        pr_info("qrcon: Recent only mode enabled, processing only last %d bytes\n", QRCON_RECENT_ONLY_SIZE);
+        history_data_pos = history_data_len - QRCON_RECENT_ONLY_SIZE;
+    }
+
     /* Process the history buffer in optimally compressed chunks */
     while (history_data_pos < history_data_len) {
         remaining = history_data_len - history_data_pos;
