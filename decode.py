@@ -17,7 +17,6 @@ COLORS = {
     4: '\033[0;33m',  # WARNING - yellow/brown
     5: '\033[0;34m',  # NOTICE - blue
     6: '\033[0m',     # INFO - default
-    7: '\033[0;30m',  # DEBUG - gray/black
 }
 RESET = '\033[0m'
 
