@@ -371,20 +371,33 @@ static size_t qrcon_compress_data(const void *src, size_t src_size, void *dst, s
     
     /* If we found a valid size, use it */
     if (best_size > 0) {
+        size_t candidate = best_size;
+        /* Adjust candidate to the last newline boundary if not processing the entire src */
+        if (best_size < src_size) {
+            const char *csrc = (const char *)src;
+            ssize_t pos;
+            for (pos = best_size; pos > 0; pos--) {
+                if (csrc[pos - 1] == '\n') {
+                    candidate = pos; // include newline
+                    break;
+                }
+            }
+        }
+
         header[0] = QR_COMPRESSION_MAGIC;
-        header[1] = (u32)best_size;
-        
-        /* Recompress with the best size we found */
+        header[1] = (u32)candidate;
+
+        /* Recompress with the candidate size aligned to line boundary */
         compressed_size = ZSTD_compressCCtx(cctx, dst + QR_COMPRESSION_HEADER_SIZE,
                                          dst_size - QR_COMPRESSION_HEADER_SIZE,
-                                         src, best_size, level);
-        
+                                         src, candidate, level);
+
         if (!ZSTD_isError(compressed_size)) {
-            *processed_size = best_size;
-            pr_debug("qrcon: Best compression: %zu -> %zu (%u%%) at level %d\n", 
-                    best_size, compressed_size + QR_COMPRESSION_HEADER_SIZE,
-                    (u32)(((compressed_size + QR_COMPRESSION_HEADER_SIZE) * 100) / QR_MAX_MSG_SIZE),
-                    level);
+            *processed_size = candidate;
+            pr_debug("qrcon: Best compression with line alignment: %zu -> %zu (%u%%) at level %d\n", 
+                     candidate, compressed_size + QR_COMPRESSION_HEADER_SIZE,
+                     (u32)(((compressed_size + QR_COMPRESSION_HEADER_SIZE) * 100) / QR_MAX_MSG_SIZE),
+                     level);
             return QR_COMPRESSION_HEADER_SIZE + compressed_size;
         }
     }
