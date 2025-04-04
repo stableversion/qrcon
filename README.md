@@ -35,6 +35,8 @@ The qrcode generation batch will automatically trigger after a panic. It likely 
 
 You can use ```panic=1``` for panic auto-reboot.
 
+Ensure ```log_buf_len=16M``` is larger than ```QR_BUF_SIZE``` so you won't miss very verbose messages
+
 ## Usefulness
 
 It is only really useful in a niche set of circumstances, specifically when mainlining Android devices, Just early enough that only simple-framebuffer works. Usually this would be enough on its own, but you won't see any kernel messages before simple-framebuffer and framebuffer console was initialized, hence why I created this.
