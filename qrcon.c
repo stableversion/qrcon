@@ -498,6 +498,22 @@ static int qrcon_panic_notifier(struct notifier_block *nb, unsigned long event, 
     /* Flush pending messages from kernel log */
     kmsg_dump_get_buffer(NULL, true, NULL, 0, NULL);
 
+    /* Debug: Print the first kmsg line for verification */
+    {
+         struct kmsg_dump_iter iter;
+         char first_line[256];
+         size_t line_len;
+         kmsg_dump_rewind(&iter);
+         if (kmsg_dump_get_line(&iter, true, first_line, sizeof(first_line) - 1, &line_len))
+         {
+             if (line_len > 0 && first_line[line_len - 1] == '\n')
+                 first_line[line_len - 1] = '\0';
+             else
+                 first_line[line_len] = '\0';
+             pr_info("qrcon: First kmsg line: %s\n", first_line);
+         }
+    }
+
     /* Accumulate additional kernel messages from the log to capture panic messages */
     {
          struct kmsg_dump_iter iter;
