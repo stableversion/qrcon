@@ -41,6 +41,8 @@ Ensure ```log_buf_len=16M``` is larger than ```QR_BUF_SIZE``` so you won't miss 
 
 It is only really useful in a niche set of circumstances, specifically when mainlining Android devices, Just early enough that only simple-framebuffer works. Usually this would be enough on its own, but you won't see any kernel messages before simple-framebuffer and framebuffer console was initialized, hence why I created this.
 
+An example on how you can use this with initramfs for debugging usb, ufs, clk, can be found [here](https://gist.github.com/stableversion/fe864dde24405d2a163f54ae31a8b389) 
+
 ### Caveats
 
 - This was hacked up in a couple of days, and largely written by AI as a proof of concept, if you couldn't tell from the code quality... but it miraculously works.
