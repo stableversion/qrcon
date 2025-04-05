@@ -216,7 +216,6 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] in ('-h', '--help'):
         print("""Usage:
   ./decode.py                 # On Termux: Monitor Binary Eye DB for QR codes and log decoded kernel messages.
-                              # Not on Termux: Read hex data or JSON from stdin, decode, and print.
   ./decode.py <filename>      # Read hex data or JSON from the specified file, decode, and print.
   ./decode.py -h | --help     # Show this help message.
 """)
