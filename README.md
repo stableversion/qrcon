@@ -6,7 +6,7 @@ A proof-of-concept Linux kernel driver which continuously collects kernel messag
 
 Simply download the zip/git clone this repo and place it in drivers/misc, or wherever you want, ensuring to add the dir in Makefile and Kconfig of misc. i.e ```source "drivers/misc/qrcon/Kconfig"``` and ```obj-y		+= qrcon/```
 
-### Decoding 
+## Decoding 
 **Note:** Only tested on 6.14 and 6.1. >4.19 requires additional modifications
 
 Some important settings to adjust depending on your screen size are:
@@ -29,7 +29,22 @@ static int recent_only = 0; // optionally show only recent messages for panic
 
 The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.
 
-- Download the [Binary Eye](https://github.com/markusfisch/BinaryEye) app on Android, enable continuous scanning. (optionally enable qrcode only mode)
+First, download the [Binary Eye](https://github.com/markusfisch/BinaryEye) app on Android and enable continuous scanning. (optionally enable qrcode only mode)
+
+```bash
+Usage:
+  ./decode.py                 # On Termux: Monitor Binary Eye DB for QR codes and log decoded kernel messages.
+  ./decode.py <filename>      # Read hex data or JSON from the specified file, decode, and print.
+  ./decode.py -h | --help     # Show this help message.
+```
+### Automatic method
+- Root is required
+- Setup [ssh](https://wiki.termux.com/wiki/Remote_Access) to your device, i.e ```ssh u0_a129@192.168.8.XXX -p 8022```
+- Enter ```tsu```
+- Run ```python3 decode.py &```
+- Read logs using ```cat logs/1.log```, etc, this can be adjusted in the code
+
+### Manual Method
 - After scanning go to history, select everything, export as JSON, and share with localsend/termux, etc.
 - Use decode.py "json" to decode with color like dmesg :D
 
