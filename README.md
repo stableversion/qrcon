@@ -29,7 +29,7 @@ static int recent_only = 0; // optionally show only recent messages for panic
 
 The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.
 
-First, download the [Binary Eye](https://github.com/markusfisch/BinaryEye) app on Android and enable continuous scanning. (optionally enable qrcode only mode)
+Download the [Binary Eye](https://github.com/markusfisch/BinaryEye) app on Android and enable continuous scanning. (optionally enable qrcode only mode)
 
 ```bash
 Usage:
