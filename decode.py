@@ -11,7 +11,7 @@ import sqlite3
 import time
 from datetime import datetime
 
-# ANSI color codes for log levels
+# ANSI color codes for dmesg-like output
 COLORS = {
     0: '\033[1;31m',  # EMERG - bright red
     1: '\033[1;31m',  # ALERT - bright red
