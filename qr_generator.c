@@ -1,6 +1,6 @@
-// SPDX-License-Identifier: GPL-2.0
-/*
- * QR Code Generator Library
+// SPDX-License-Identifier: MIT
+// TAKEN FROM DRM_PANIC_QR.RS
+/* QR Code Generator Library
  *
  * This is a simple QR encoder that doesn't allocate memory and does all the work
  * on the stack or on the provided buffers. For simplification, it only supports
@@ -16,7 +16,6 @@
  * valid url parameter, so the website can do the reverse, to get the
  * binary data.
  *
- * Copyright (C) 2023 Linux Kernel Contributors
  */
 
 #include <linux/kernel.h>

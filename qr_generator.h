@@ -1,4 +1,5 @@
-/* SPDX-License-Identifier: GPL-2.0 */
+// SPDX-License-Identifier: MIT
+// TAKEN FROM DRM_PANIC_QR.RS
 /*
  * QR Code Generator Library Header
  *
@@ -6,7 +7,6 @@
  * on the stack or on the provided buffers. For simplification, it only supports
  * low error correction, and applies the first mask (checkerboard).
  *
- * Copyright (C) 2023 Linux Kernel Contributors
  */
 
 #ifndef _QR_GENERATOR_H

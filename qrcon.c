@@ -1,11 +1,12 @@
 /*
- * qrcon.c - QR code encoder for kernel messages
+ * qrcon.c - Display kernel log messages as QR codes on panic
  *
- * This module captures kernel log messages using kmsg_dump mechanism,
- * encodes them into QR codes, and displays them on the framebuffer.
- * When a buffer of messages reaches approximately QR_MAX_MSG_SIZE bytes, a new
- * QR code is generated and displayed.
+ * This driver displays kernel log messages on the framebuffer console
+ * as a sequence of QR codes during a system panic.
  *
+ * It captures messages using the kmsg_dump mechanism, compresses them
+ * using ZSTD, determines the optimal data size for the configured QR version
+ * using a binary search, and renders the resulting QR codes.
  */
 
 #include <linux/module.h>
