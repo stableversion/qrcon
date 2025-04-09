@@ -11,10 +11,10 @@ Simply download the zip/git clone this repo and place it in drivers/misc, or whe
 
 Some important settings to adjust depending on your screen size are:
 ```c
-static int qr_position = QRPOS_TOP_RIGHT;
-static int qr_x_offset = 10;
-static int qr_y_offset = 200;
-static int qr_size_percent = 60;
+static int qr_position = QRPOS_CENTER;
+static int qr_x_offset = 0;
+static int qr_y_offset = 0;
+static int qr_size_percent = 100;
 static int qr_border = 5;
 ```
 *note: if you have a larger screen you can place a small version in the corner to see both console and qrcodes!*
