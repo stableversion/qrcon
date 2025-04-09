@@ -202,8 +202,8 @@ static int qrcon_render_qr(void)
     /* Determine QR code position */
     switch (qr_position) {
     case QRPOS_CENTER:
-        start_x = (xres - qr_render_width) / 2;
-        start_y = (yres - qr_render_width) / 2;
+        start_x = (xres - qr_render_width) / 2 + qr_x_offset;
+        start_y = (yres - qr_render_width) / 2 + qr_y_offset;
         break;
     case QRPOS_TOP_LEFT:
         start_x = qr_x_offset;
