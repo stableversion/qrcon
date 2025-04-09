@@ -75,5 +75,4 @@ The QR code library originally came from [drm_panic_qr](https://github.com/torva
 ## TODO:
 Clean up AI slop basically
 - Find a better solution instead of expensive binary search?
-- Remove dynamic ZSTD workspace allocation.
 - Remove 2.5% numeric overhead calculation in qr_max_data_size since we dont use it?

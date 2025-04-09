@@ -54,8 +54,11 @@ static int qr_border = 5;
 #define QR_COMPRESSION_HEADER_SIZE 8     /* 4 bytes magic + 4 bytes uncompressed size */
 #define QR_SKIP_SIZE 1024  /* Bytes to skip on compression error */
 
-/* Compression level (1-22) */
-/* Above 21 will cause memory allocation failures. */
+/* Sized generously to accommodate ZSTD level (8). roughly ~6.2MB workspace. */
+#define QRCON_ZSTD_WORKSPACE_SIZE (8 * 1024 * 1024)
+
+/* Compression level (1-8) */
+/* Anything above 8 is not supported, unless you want 55MB of static memory. */
 static int compression_level = 3;
 
 /* Add extern declaration for registered_fb */
@@ -76,10 +79,9 @@ static u8 qr_tmp_workspace[QR_TMP_WORKSPACE_SIZE];
 static size_t qr_payload_len;
 static u8 qr_width;
 
-/* Compression context */
+/* Compression context and static workspace */
 static ZSTD_CCtx *cctx;
-static void *compression_workspace;
-static size_t compression_workspace_size;
+static u8 zstd_static_workspace[QRCON_ZSTD_WORKSPACE_SIZE];
 
 /* kmsg history data */
 static bool qrcon_initialized = false;
@@ -267,28 +269,34 @@ static int qrcon_render_qr(void)
 /* Initialize compression */
 static int qrcon_init_compression(void)
 {
-    size_t const workspace_size = ZSTD_estimateCCtxSize(compression_level);
+    size_t required_size;
+    
+    /* Validate compression level */
+    if (compression_level < 1 || compression_level > 22) {
+        pr_err("qrcon: Invalid compression_level %d, must be between 1 and 22.\n", compression_level);
+        return -EINVAL;
+    }
 
-    compression_workspace = kmalloc(workspace_size, GFP_KERNEL);
-    if (!compression_workspace)
+    required_size = ZSTD_estimateCCtxSize(compression_level);
+
+    /* Check if the required size exceeds our static buffer */
+    if (required_size > QRCON_ZSTD_WORKSPACE_SIZE) {
+        pr_err("qrcon: ZSTD Level %d requires %zu bytes, exceeding static buffer size %d. Reduce compression_level or increase QRCON_ZSTD_WORKSPACE_SIZE.\n",
+               compression_level, required_size, QRCON_ZSTD_WORKSPACE_SIZE);
         return -ENOMEM;
+    }
 
-    compression_workspace_size = workspace_size;
-    cctx = ZSTD_initStaticCCtx(compression_workspace, workspace_size);
+    pr_debug("qrcon: Using compression level %d (requires %zu bytes, static buffer %d bytes).\n",
+            compression_level, required_size, QRCON_ZSTD_WORKSPACE_SIZE);
+
+    cctx = ZSTD_initStaticCCtx(zstd_static_workspace, QRCON_ZSTD_WORKSPACE_SIZE);
 
     if (!cctx) {
-        kfree(compression_workspace);
+        pr_err("qrcon: Failed to initialize static ZSTD context.\n");
         return -ENOMEM;
     }
 
     return 0;
-}
-
-/* Cleanup compression */
-static void qrcon_cleanup_compression(void)
-{
-    if (compression_workspace)
-        kfree(compression_workspace);
 }
 
 /* Compress data to fit within the target QR version capacity.
@@ -516,8 +524,6 @@ static void qrcon_process_history(void)
         } else {
             if (panic_in_progress)
                 mdelay(qr_refresh_delay);
-            else
-                msleep(qr_refresh_delay);
         }
     }
         
@@ -615,7 +621,6 @@ static int __init qrcon_init(void)
     /* Open framebuffer */
     ret = qrcon_open_fb();
     if (ret < 0) {
-        qrcon_cleanup_compression();
         return ret;
     }
 
@@ -623,7 +628,6 @@ static int __init qrcon_init(void)
     ret = atomic_notifier_chain_register(&panic_notifier_list, &panic_nb);
     if (ret) {
         pr_err("qrcon: Failed to register panic notifier\n");
-        qrcon_cleanup_compression();
         return ret;
     }
 
@@ -637,7 +641,6 @@ static void __exit qrcon_exit(void)
 {
     qrcon_initialized = false;
     atomic_notifier_chain_unregister(&panic_notifier_list, &panic_nb);
-    qrcon_cleanup_compression();
     pr_info("qrcon: Module exit\n");
 }
 
