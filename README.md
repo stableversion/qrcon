@@ -17,6 +17,7 @@ static int qr_y_offset = 200;
 static int qr_size_percent = 60;
 static int qr_border = 5;
 ```
+*note: if you have a larger screen you can place a small version in the corner to see both console and qrcodes!*
 ```c
 static int qr_version = 20; // around ~842 bytes (1-40)
 ```

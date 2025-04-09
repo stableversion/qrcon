@@ -34,10 +34,10 @@ static int recent_only = 0;
 #define QRPOS_CUSTOM      5
 
 /* QR code position parameters */
-static int qr_position = QRPOS_TOP_RIGHT;
-static int qr_x_offset = 10;
-static int qr_y_offset = 200;
-static int qr_size_percent = 60;
+static int qr_position = QRPOS_CENTER;
+static int qr_x_offset = 0;
+static int qr_y_offset = 0;
+static int qr_size_percent = 100;
 static int qr_border = 5;
 
 /* Maximum size of kernel message history buffer to collect (10MB) */
