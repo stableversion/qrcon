@@ -18,7 +18,7 @@ static int qr_size_percent = 60;
 static int qr_border = 5;
 ```
 ```c
-#define QR_MAX_MSG_SIZE 1200 // this is how much data will be encoded in each qrcode
+static int qr_version = 20; // around ~842 bytes (1-40)
 ```
 ```c
 static int qr_refresh_delay = 700; // give you enough time to scan the qrcode
@@ -50,7 +50,7 @@ Usage:
 
 You can use ```panic=1``` for panic auto-reboot.
 
-Ensure ```log_buf_len=16M``` is larger than ```QR_BUF_SIZE``` so you won't miss very verbose messages
+Note: The final qrcode may look strange, that is normal, it's simply padding to ensure a fixed size.
 
 ## Usefulness
 
