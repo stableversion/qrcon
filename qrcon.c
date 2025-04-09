@@ -19,7 +19,7 @@
 #include <linux/panic_notifier.h>
 #include "qr_generator.h"
 
-static int qr_version = 20; // around ~842 bytes
+static int qr_version = 20; // around ~842 bytes (1-40)
 static int qr_refresh_delay = 700; // in ms
 static int recent_only = 0;
 
