@@ -54,7 +54,7 @@ static int qr_border = 5;
 #define QR_SKIP_SIZE 1024  /* Bytes to skip on compression error */
 
 /* Compression level (1-22) */
-/* Annything above 3 is broken. TODO!!!!!!!! */
+/* Above 21 will cause memory allocation failures. */
 static int compression_level = 3;
 
 /* Add extern declaration for registered_fb */
@@ -266,7 +266,7 @@ static int qrcon_render_qr(void)
 /* Initialize compression */
 static int qrcon_init_compression(void)
 {
-    size_t const workspace_size = ZSTD_estimateCStreamSize(compression_level);
+    size_t const workspace_size = ZSTD_estimateCCtxSize(compression_level);
 
     compression_workspace = kmalloc(workspace_size, GFP_KERNEL);
     if (!compression_workspace)

@@ -74,5 +74,5 @@ The QR code library originally came from [drm_panic_qr](https://github.com/torva
 
 ## TODO:
 Clean up AI slop basically
-- Fix ZSTD_estimateCCtxSize, anything higher than 3 fails.
-- Sometimes framebuffer console can interfere and overwrite some qrcode data.
+- Find a better solution instead of expensive binary search?
+- Remove dynamic ZSTD workspace allocation.
