@@ -526,7 +526,7 @@ static void qrcon_process_history(void)
                 mdelay(qr_refresh_delay);
         }
     }
-        
+    mdelay(1000); // Small delay before framebuffer console overwrites the final QR code    
     pr_info("qrcon: Completed processing historical kernel messages\n");
     
     /* Reset history data state after processing */
