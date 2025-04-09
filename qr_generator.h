@@ -30,6 +30,7 @@ extern "C" {
  * @tmp: A temporary buffer that the QR code encoder will use to write the
  *       segments and ECC.
  * @tmp_size: Size of the temporary buffer, must be at least 3706 bytes for V40.
+ * @qr_version: The specific QR version to use (1-40)
  *
  * This function generates a QR code containing the provided data. If a URL is 
  * provided, it is encoded as a Binary segment, and the data is encoded as a 
@@ -48,6 +49,7 @@ extern "C" {
 u8 qr_generate(const char *url,
                u8 *data,
                size_t data_len,
+               u8 qr_version,
                size_t data_size,
                u8 *tmp,
                size_t tmp_size);

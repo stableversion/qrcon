@@ -648,7 +648,7 @@ static u16 get_next_13b(const u8 *data, size_t data_len, size_t offset, size_t *
  *
  * Return: The appropriate QR version, version.version = 0 if no suitable version found
  */
-static struct qr_version qr_version_from_segments(const struct qr_segment *segments[], size_t count)
+static struct qr_version __maybe_unused qr_version_from_segments(const struct qr_segment *segments[], size_t count)
 {
 	size_t v;
 	struct qr_version version;
@@ -829,6 +829,7 @@ static bool qr_segment_iterator_next(struct segment_iterator *iter, u16 *bits, s
 static bool encoded_msg_init(struct encoded_msg *em, 
                            const struct qr_segment *segments[],
                            size_t count,
+                           u8 qr_version, /* The QR version to use */
                            u8 *data,
                            size_t data_size)
 {
@@ -839,17 +840,33 @@ static bool encoded_msg_init(struct encoded_msg *em,
 	size_t g2_blocks;
 	size_t g1_blk_size;
 	size_t required_size;
+	size_t total_bits = 0;
+	size_t i;
 	
 	if (!em || !segments || !data || count == 0 || data_size == 0)
 		return false;
 	
-	/* Find the appropriate QR version for these segments */
-	version = qr_version_from_segments(segments, count);
-	if (version.version == 0 || version.version > 40)
+	/* Validate and set the QR version */
+	if (qr_version < 1 || qr_version > 40) {
+		pr_err("qr_generator: Invalid QR version specified (%u)\\n", qr_version);
 		return false;
+	}
+	version.version = qr_version;
+	
+	/* Calculate total bits required for segments + terminator */
+	for (i = 0; i < count; i++) {
+		total_bits += qr_segment_total_size_bits(segments[i], version);
+	}
+	total_bits += 4; /* Add 4 bits for the terminator */
 	
 	/* Calculate data sizes based on version */
 	max_data = qr_version_max_data(version);
+	/* Check if the chosen version can hold the required bits */
+	if (total_bits > max_data * 8) {
+		pr_err("qr_generator: Data (%zu bits) exceeds capacity (%zu bits) for version %u\\n",
+		       total_bits, max_data * 8, version.version);
+		return false; /* Version is too small for the data */
+	}
 	ec_size = qr_version_ec_size(version);
 	g1_blocks = qr_version_g1_blocks(version);
 	g2_blocks = qr_version_g2_blocks(version);
@@ -1606,6 +1623,7 @@ static void qr_image_draw(struct qr_image *qr, const struct encoded_msg *em)
 u8 qr_generate(const char *url,
               u8 *data,
               size_t data_len,
+              u8 qr_version,
               size_t data_size,
               u8 *tmp,
               size_t tmp_size)
@@ -1617,8 +1635,14 @@ u8 qr_generate(const char *url,
 	struct qr_image qr;
 	
 	/* Ensure minimum buffer sizes */
-	if (data_size < 4071 || tmp_size < 3706 || data_len > data_size)
+	if (data_size < 4071 || tmp_size < 3706)
 		return 0;
+	
+	/* Validate QR version early */
+	if (qr_version < 1 || qr_version > 40) {
+		pr_err("qr_generator: Invalid QR version %u specified to qr_generate\\n", qr_version);
+		return 0;
+	}
 	
 	/* Setup segments according to parameters */
 	if (url) {
@@ -1642,7 +1666,7 @@ u8 qr_generate(const char *url,
 	}
 	
 	/* Initialize and encode the message */
-	if (!encoded_msg_init(&em, segments, count, tmp, tmp_size))
+	if (!encoded_msg_init(&em, segments, count, qr_version, tmp, tmp_size))
 		return 0;
 	
 	encoded_msg_encode(&em, segments, count);
