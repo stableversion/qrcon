@@ -19,13 +19,11 @@
 #include <linux/panic_notifier.h>
 #include "qr_generator.h"
 
-/* Add extern declaration for registered_fb */
-extern struct fb_info *registered_fb[FB_MAX];
+static int qr_version = 20; // around ~842 bytes
+static int qr_refresh_delay = 700; // in ms
+static int recent_only = 0;
 
-/* Size for payload (compressed kmsg) buffer, also used for QR image output */
-#define QR_PAYLOAD_AND_IMAGE_BUF_SIZE 8192
-/* Temp workspace for qr_generate, needs >= 3706 bytes */
-#define QR_TMP_WORKSPACE_SIZE 4096
+#define QRCON_RECENT_ONLY_SIZE 8096
 
 /* QR code positioning macros */
 #define QRPOS_CENTER      0
@@ -35,27 +33,32 @@ extern struct fb_info *registered_fb[FB_MAX];
 #define QRPOS_BOTTOM_RIGHT 4
 #define QRPOS_CUSTOM      5
 
-/* Compression related defines */
-#define QR_COMPRESSION_MAGIC 0x5A535444  /* "ZSTD" */
-#define QR_COMPRESSION_HEADER_SIZE 8     /* 4 bytes magic + 4 bytes uncompressed size */
-#define QR_SKIP_SIZE 1024  /* Bytes to skip on compression error */
-
-/* Maximum size of kernel message history buffer to collect (10MB) */
-#define KMSG_HISTORY_BUF_SIZE (10 * 1024 * 1024)
-
-/* Minimal configurable parameters */
+/* QR code position parameters */
 static int qr_position = QRPOS_TOP_RIGHT;
 static int qr_x_offset = 10;
 static int qr_y_offset = 200;
 static int qr_size_percent = 60;
 static int qr_border = 5;
 
-/* Define the QR code version (1-40, mandatory) */
-static int qr_version = 20; /* Default to V40 */
+/* Maximum size of kernel message history buffer to collect (10MB) */
+#define KMSG_HISTORY_BUF_SIZE (10 * 1024 * 1024)
 
-/* Compression level (1-22, higher = better compression but slower) */
-/* Default reduced to 3 to lower memory allocation requirement for workspace */
+/* Size for payload (compressed kmsg) buffer, also used for QR image output */
+#define QR_PAYLOAD_AND_IMAGE_BUF_SIZE 8192
+/* Temp workspace for qr_generate, needs >= 3706 bytes */
+#define QR_TMP_WORKSPACE_SIZE 4096
+
+/* Compression related defines */
+#define QR_COMPRESSION_MAGIC 0x5A535444  /* "ZSTD" */
+#define QR_COMPRESSION_HEADER_SIZE 8     /* 4 bytes magic + 4 bytes uncompressed size */
+#define QR_SKIP_SIZE 1024  /* Bytes to skip on compression error */
+
+/* Compression level (1-22) */
+/* Annything above 3 is broken. TODO!!!!!!!! */
 static int compression_level = 3;
+
+/* Add extern declaration for registered_fb */
+extern struct fb_info *registered_fb[FB_MAX];
 
 /* Framebuffer globals */
 static struct fb_info *fb_info;
@@ -86,13 +89,6 @@ static size_t kmsg_history_pos = 0;
 /* Panic notification handling */
 static bool panic_in_progress = false;
 static bool panic_rendering_complete = false;
-
-/* Delay between QR code updates in milliseconds */
-static int qr_refresh_delay = 700;
-
-/* Recent only mode */
-#define QRCON_RECENT_ONLY_SIZE 8096
-static int recent_only = 0;
 
 /* Function prototypes */
 static int qrcon_render_qr(void);
@@ -558,7 +554,7 @@ static int qrcon_panic_notifier(struct notifier_block *nb, unsigned long event, 
                  first_line[line_len - 1] = '\0';
              else
                  first_line[line_len] = '\0';
-             pr_info("qrcon: First kmsg line: %s\n", first_line);
+             pr_debug("qrcon: First kmsg line: %s\n", first_line);
          }
     }
 
