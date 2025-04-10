@@ -28,7 +28,7 @@ static int qr_refresh_delay = 700; // give you enough time to scan the qrcode
 static int recent_only = 0; // optionally show only recent messages for panic
 ```
 ```c
-static int reboot_to_bootloader = 0  // optionally reboot to bootloader if supported
+static int reboot_to_bootloader = 0;  // optionally reboot to bootloader if supported
 ```
 
 The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.
