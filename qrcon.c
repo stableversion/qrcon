@@ -63,7 +63,7 @@ static int qr_border = 5;
 static int compression_level = 3;
 
 // Ensure SPMI/SDAM/NVMEM is properly configured for this to work.
-static int reboot_to_bootloader = 0 
+static int reboot_to_bootloader = 0;
 
 /* Add extern declaration for registered_fb */
 extern struct fb_info *registered_fb[FB_MAX];
