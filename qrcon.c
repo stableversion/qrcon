@@ -542,6 +542,8 @@ static void qrcon_process_history(void)
 /* Refactored qrcon_panic_notifier to capture panic messages by accumulating extra log lines */
 static int qrcon_panic_notifier(struct notifier_block *nb, unsigned long event, void *buf)
 {
+    int ret;
+
     if (!qrcon_initialized)
         return NOTIFY_DONE;
 
@@ -549,6 +551,14 @@ static int qrcon_panic_notifier(struct notifier_block *nb, unsigned long event, 
         return NOTIFY_DONE;
 
     panic_in_progress = true;
+
+    /* Try opening framebuffer, if it didn't init before panic, nothing will. */
+    ret = qrcon_open_fb();
+    if (ret < 0) {
+        pr_err("qrcon: Failed to open framebuffer, cannot display QR codes.\n");
+        panic_in_progress = false;
+        return NOTIFY_DONE;
+    }
 
     /* Flush pending messages from kernel log */
     kmsg_dump_get_buffer(NULL, true, NULL, 0, NULL);
@@ -628,12 +638,6 @@ static int __init qrcon_init(void)
     /* Initialize buffer */
     qr_payload_len = 0;
 
-    /* Open framebuffer */
-    ret = qrcon_open_fb();
-    if (ret < 0) {
-        return ret;
-    }
-
     /* Register panic notifier */
     ret = atomic_notifier_chain_register(&panic_notifier_list, &panic_nb);
     if (ret) {
@@ -654,5 +658,5 @@ static void __exit qrcon_exit(void)
     pr_info("qrcon: Module exit\n");
 }
 
-module_init(qrcon_init);
+postcore_initcall(qrcon_init);
 module_exit(qrcon_exit);
