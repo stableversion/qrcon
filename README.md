@@ -4,7 +4,7 @@ A proof-of-concept Linux kernel driver which continuously collects kernel messag
 
 ## Installing
 
-Simply download the zip/git clone this repo and place it in drivers/misc, or wherever you want, ensuring to add the dir in Makefile and Kconfig of misc. i.e ```source "drivers/misc/qrcon/Kconfig"``` and ```obj-y		+= qrcon/```
+Simply download the zip/git clone this repo and place it in drivers/misc, or wherever you want, ensuring to add the dir in Makefile and Kconfig of misc. i.e ```source "drivers/misc/qrcon/Kconfig"``` and ```obj-y += qrcon/```
 
 ## Decoding 
 **Note:** Only tested on 6.14 and 6.1. >4.19 requires additional modifications
@@ -26,6 +26,9 @@ static int qr_refresh_delay = 700; // give you enough time to scan the qrcode
 ```
 ```c
 static int recent_only = 0; // optionally show only recent messages for panic
+```
+```c
+static int reboot_to_bootloader = 0  // optionally reboot to bootloader if supported
 ```
 
 The qrcode generation batch will automatically trigger after a panic. It likely won't survive a catostrophic panic, but it has not been tested.

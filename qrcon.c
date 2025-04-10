@@ -18,6 +18,7 @@
 #include <linux/delay.h>
 #include <linux/zstd.h>
 #include <linux/panic_notifier.h>
+#include <linux/reboot.h>
 #include "qr_generator.h"
 
 static int qr_version = 20; // around ~842 bytes (1-40)
@@ -60,6 +61,9 @@ static int qr_border = 5;
 /* Compression level (1-8) */
 /* Anything above 8 is not supported, unless you want 55MB of static memory. */
 static int compression_level = 3;
+
+// Ensure SPMI/SDAM/NVMEM is properly configured for this to work.
+static int reboot_to_bootloader = 0 
 
 /* Add extern declaration for registered_fb */
 extern struct fb_info *registered_fb[FB_MAX];
@@ -595,6 +599,12 @@ static int qrcon_panic_notifier(struct notifier_block *nb, unsigned long event, 
     pr_info("qrcon: Processed all dumped kernel messages as QR codes\n");
 
     panic_rendering_complete = true;
+
+    if (reboot_to_bootloader) {
+        kernel_restart("bootloader");
+        // Does not return
+    }
+
     return NOTIFY_DONE;
 }
 
